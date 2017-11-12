@@ -8,12 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-import org.jsoup.*;
-
-import java.io.IOException;
 import java.io.PrintWriter;
 
 
@@ -27,30 +22,23 @@ public class ParsePageServlet extends HttpServlet {
     
 	int count;
 	private ParsePage pp;
+	String url = "https://unity3d.com/showcase/gallery";
     /**
      * @see HttpServlet#HttpServlet()
      */
     public ParsePageServlet() {
         super();
-        // TODO Auto-generated constructor stub
     }
     
+    
+    /* This function handle the rendering content retrieved from the source page */
     public void service(HttpServletRequest request, HttpServletResponse response) throws IOException{
-    	HttpSession session = request.getSession(true);
-    	Integer ival = (Integer)session.getAttribute("mysession.counter");
-    	if(ival == null){
-    		ival = new Integer(1);
-    	}else{
-    		ival = new Integer(ival.intValue() + 1);
-    	}
-    	session.setAttribute("mysession.counter", ival);
     	PrintWriter out = response.getWriter();
     	
+    	/* print out the game content part */
     	out.print("<HTML>");
-    	//out.print("<center> you have hit this page ");
-    	//out.print(ival + " times! ");
     	Element out_str;
-		out_str = pp.parseURLJsoup();
+		out_str = pp.getUlElement("div.game-list-wrap.clear");
     	out.print(out_str);
     	out.println("</html>");
     }
@@ -59,21 +47,21 @@ public class ParsePageServlet extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		response.getWriter().append("Served at: ").append(request.getContextPath());
+		//response.getWriter().append("Served at: ").append(request.getContextPath());
 		HttpSession session = request.getSession(true);
 		session.setMaxInactiveInterval(5);
 		response.setContentType("text/plain");
-		PrintWriter out = response.getWriter();
+		//update the source when the current session expires
 		if(session.isNew()){
-			count++;
+			pp.updateDocument(url);
 		}
-		out.println("This site has been accessed " + count + " times.");
 		
 	}
 	
 	@Override
 	public void init() throws ServletException{
 		pp = new ParsePage();
+		pp.updateDocument(url);
 	}
 	
 	@Override
